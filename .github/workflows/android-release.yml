@@ -52,15 +52,31 @@ jobs:
           ./build-host/apex_track_asset_catalog_test
           ./build-host/apex_glb_loader_test
       - name: Build playable debug APK
-        run: gradle --no-daemon :app:assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon --stacktrace :app:assembleDebug 2>&1 | tee build-apk.log
+          status=${PIPESTATUS[0]}
+          if [ "$status" -ne 0 ]; then
+            echo "===== LAST 250 BUILD LOG LINES ====="
+            tail -250 build-apk.log
+            exit "$status"
+          fi
       - name: Verify APK
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
           sha256sum app/build/outputs/apk/debug/app-debug.apk
           ls -lh app/build/outputs/apk/debug/app-debug.apk
       - name: Upload playable APK
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: apex-engine-next-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
+      - name: Upload build diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-engine-next-build-diagnostics
+          path: build-apk.log
+          if-no-files-found: ignore
