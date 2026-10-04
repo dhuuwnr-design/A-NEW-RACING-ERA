@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
-python3 tools/generate_glb_assets.py
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$ROOT"
+
+python3 tools/generate_glb_assets.py
 
 export ANDROID_HOME="${ANDROID_HOME:-/content/android-sdk}"
 export ANDROID_SDK_ROOT="$ANDROID_HOME"
@@ -12,8 +13,8 @@ export PATH="$ANDROID_HOME/cmdline-tools/latest/bin:$ANDROID_HOME/platform-tools
 sudo_cmd=""
 if command -v sudo >/dev/null 2>&1; then sudo_cmd=sudo; fi
 
-$ sudo_cmd apt-get update -qq
-$ sudo_cmd apt-get install -y wget unzip openjdk-17-jdk >/dev/null
+$sudo_cmd apt-get update -qq
+$sudo_cmd apt-get install -y wget unzip openjdk-17-jdk >/dev/null
 
 mkdir -p "$ANDROID_HOME/cmdline-tools"
 if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
@@ -53,3 +54,4 @@ APK="$ROOT/app/build/outputs/apk/debug/app-debug.apk"
 test -s "$APK"
 echo "APK: $APK"
 ls -lh "$APK"
+sha256sum "$APK"

@@ -1,0 +1,53 @@
+name: Apex Engine Next Android Release
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+      - name: Install Android build toolchain
+        run: |
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+          yes | sdkmanager --licenses >/dev/null || true
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: "8.10.2"
+      - name: Configure host tests
+        run: cmake -S app/src/main/cpp -B build-host
+      - name: Build host tests
+        run: cmake --build build-host --target apex_physics_test apex_track_test apex_asset_manifest_test apex_asset_catalog_test apex_track_asset_catalog_test apex_glb_loader_test
+      - name: Run host tests
+        run: |
+          ./build-host/apex_physics_test
+          ./build-host/apex_track_test
+          ./build-host/apex_asset_manifest_test
+          ./build-host/apex_asset_catalog_test
+          ./build-host/apex_track_asset_catalog_test
+          ./build-host/apex_glb_loader_test
+      - name: Build playable debug APK
+        run: gradle --no-daemon :app:assembleDebug
+      - name: Verify APK
+        run: |
+          test -s app/build/outputs/apk/debug/app-debug.apk
+          sha256sum app/build/outputs/apk/debug/app-debug.apk
+          ls -lh app/build/outputs/apk/debug/app-debug.apk
+      - name: Upload playable APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: apex-engine-next-debug-apk
+          path: app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
