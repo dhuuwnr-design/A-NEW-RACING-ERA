@@ -185,7 +185,16 @@ static void drawWorld(float dt){
         cx=car.x+fx*lookAhead; cy=targetRoadY+.35f; cz=car.y+fz*lookAhead;
     }
     lookAt(v,ex,ey,ez,cx,cy,cz);mul(pv,p,v);
-    glViewport(0,0,width,height);glClearColor(.012f,.022f,.035f,1);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
+    // Circuit-aware atmosphere gives each venue a distinct visual identity
+    // without adding extra geometry or draw calls.
+    float skyR=.010f,skyG=.020f,skyB=.034f;
+    switch(race.trackIndex%7){
+        case 4: skyR=.045f;skyG=.026f;skyB=.018f; break; // Bahrain desert
+        case 5: skyR=.012f;skyG=.030f;skyB=.038f; break; // Interlagos
+        case 6: skyR=.018f;skyG=.028f;skyB=.042f; break; // COTA
+        default: break;
+    }
+    glViewport(0,0,width,height);glClearColor(skyR,skyG,skyB,1);glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
     // Keep the world floor below the deepest circuit terrain (Spa has a large descent).
     std::vector<float>ground={-220,-70.0f,-220,220,-70.0f,-220,220,-70.0f,220,-220,-70.0f,-220,220,-70.0f,220,-220,-70.0f,220};
@@ -265,12 +274,17 @@ static void drawWorld(float dt){
             addBox(trees,tx,a.elevation+.85f,tz,0,.18f,.85f,.18f);
             addBox(trees,tx,a.elevation+1.95f,tz,0,.85f,1.0f,.85f);
         }
-        if((i/3)%2==0){
-            addQuad(kerbWhite,lxA,a.elevation+.025f,lzA,lxB,b.elevation+.025f,lzB,b.x+bnx*bw,b.elevation+.025f,b.z+bnz*bw,a.x+anx*aw,a.elevation+.025f,a.z+anz*aw);
-            addQuad(kerbWhite,rxA,a.elevation+.026f,rzA,rxB,b.elevation+.026f,rzB,b.x-bnx*bw,b.elevation+.026f,b.z-bnz*bw,a.x-anx*aw,a.elevation+.026f,a.z-anz*aw);
-        }else{
-            addQuad(kerbRed,lxA,a.elevation+.025f,lzA,lxB,b.elevation+.025f,lzB,b.x+bnx*bw,b.elevation+.025f,b.z+bnz*bw,a.x+anx*aw,a.elevation+.025f,a.z+anz*aw);
-            addQuad(kerbRed,rxA,a.elevation+.026f,rzA,rxB,b.elevation+.026f,rzB,b.x-bnx*bw,b.elevation+.026f,b.z-bnz*bw,a.x-anx*aw,a.elevation+.026f,a.z-anz*aw);
+        // Kerbs are a racing-line feature, not a decorative stripe around the
+        // entire circuit. Keep them concentrated in actual corner geometry.
+        if(corner){
+            const int kerbStripe=(i/3)%2;
+            if(kerbStripe==0){
+                addQuad(kerbWhite,lxA,a.elevation+.025f,lzA,lxB,b.elevation+.025f,lzB,b.x+bnx*bw,b.elevation+.025f,b.z+bnz*bw,a.x+anx*aw,a.elevation+.025f,a.z+anz*aw);
+                addQuad(kerbWhite,rxA,a.elevation+.026f,rzA,rxB,b.elevation+.026f,rzB,b.x-bnx*bw,b.elevation+.026f,b.z-bnz*bw,a.x-anx*aw,a.elevation+.026f,a.z-anz*aw);
+            }else{
+                addQuad(kerbRed,lxA,a.elevation+.025f,lzA,lxB,b.elevation+.025f,lzB,b.x+bnx*bw,b.elevation+.025f,b.z+bnz*bw,a.x+anx*aw,a.elevation+.025f,a.z+anz*aw);
+                addQuad(kerbRed,rxA,a.elevation+.026f,rzA,rxB,b.elevation+.026f,rzB,b.x-bnx*bw,b.elevation+.026f,b.z-bnz*bw,a.x-anx*aw,a.elevation+.026f,a.z-anz*aw);
+            }
         }
     }
     // Circuit-specific materials keep the seven venues visually distinct instead of
