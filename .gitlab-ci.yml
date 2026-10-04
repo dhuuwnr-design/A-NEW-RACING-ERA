@@ -1,0 +1,32 @@
+stages:
+  - verify
+  - android
+
+physics_verify:
+  stage: verify
+  image: gcc:14
+  script:
+    - apt-get update
+    - apt-get install -y cmake
+    - cmake -S app/src/main/cpp -B build-host
+    - cmake --build build-host --target apex_physics_test
+    - ./build-host/apex_physics_test
+
+android_debug:
+  stage: android
+  image: gradle:8.10.2-jdk17
+  script:
+    - apt-get update
+    - apt-get install -y wget unzip
+    - mkdir -p "$ANDROID_HOME/cmdline-tools"
+    - wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/sdk.zip
+    - unzip -q /tmp/sdk.zip -d "$ANDROID_HOME/cmdline-tools"
+    - mv "$ANDROID_HOME/cmdline-tools/cmdline-tools" "$ANDROID_HOME/cmdline-tools/latest"
+    - yes | sdkmanager --licenses >/dev/null || true
+    - sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+    - gradle --no-daemon :app:assembleDebug
+  artifacts:
+    when: always
+    paths:
+      - app/build/outputs/apk/debug/app-debug.apk
+    expire_in: 7 days
