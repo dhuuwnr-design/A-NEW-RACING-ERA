@@ -16,11 +16,19 @@ jobs:
         with:
           distribution: temurin
           java-version: "17"
-      - name: Locate Android SDK
+      - name: Prepare Android command-line tools
         run: |
-          echo "ANDROID_HOME=$ANDROID_HOME"
-          test -n "$ANDROID_HOME"
-          test -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" || test -x "$ANDROID_HOME/cmdline-tools/bin/sdkmanager" || test -x "$(command -v sdkmanager)"
+          export ANDROID_SDK_ROOT="$ANDROID_HOME"
+          mkdir -p "$ANDROID_HOME/cmdline-tools"
+          if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
+            wget -q https://dl.google.com/android/repository/commandlinetools-linux-11076708_latest.zip -O /tmp/android-cmdline.zip
+            rm -rf "$ANDROID_HOME/cmdline-tools/latest" /tmp/android-cmdline
+            mkdir -p /tmp/android-cmdline
+            unzip -q /tmp/android-cmdline.zip -d /tmp/android-cmdline
+            mv /tmp/android-cmdline/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
+          fi
+          echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
       - name: Install Android build toolchain
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
