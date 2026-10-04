@@ -21,6 +21,35 @@ Apex Engine Next is the user's serious Android-first F1-style racing game projec
 - Use free/open assets where licensing permits and record provenance/licensing before admitting assets.
 - Never claim a track is exact or 99% accurate without evidence and visual/geometry validation.
 
+
+
+## Beyond-expectations north star
+
+Apex Engine Next is not being optimized merely to resemble existing mobile racing games. The target is an original racing experience whose combination of driving feel, circuit fidelity, presentation, simulation depth and mobile performance feels unusually ambitious for its platform.
+
+The project should continuously pursue:
+- believable vehicle dynamics that communicate grip, load transfer, tyre state and aero rather than arcade steering;
+- circuits that feel geographically and visually specific instead of interchangeable procedural tracks;
+- a living race presentation: meaningful camera language, timing/position information, start/restart/race-finish drama, and future broadcast-grade presentation;
+- environmental depth that changes the driver's perception of speed and place without wasting mobile GPU budget;
+- scalable systems so future weather, time-of-day, damage, strategy, telemetry and richer AI can be added without replacing the engine foundation;
+- original design ideas that go beyond copying the feature checklist of another F1 game.
+
+Every ambitious feature still needs the same rule: implement it, measure it, test it, and keep only what improves the actual game.
+
+## Latest verified work
+
+Commit 726fadab49327c4ce34fe0d4bc0f71600f7e214d:
+- changed circuit kerbs from an unconditional full-lap stripe to a geometry-derived corner-only feature;
+- added circuit-aware atmospheric clear palettes for distinct venue identity;
+- preserved the existing rendering path and avoided extra geometry/draw-call overhead for the atmosphere change.
+
+Verification status for this work:
+- GitHub commit succeeded.
+- Repository file update succeeded.
+- Full Android runtime/build verification has NOT yet been performed in this session.
+- Therefore this change must not be described as runtime-validated until a real build/test/device check succeeds.
+
 ## Verified repository state at checkpoint
 
 The GitHub repository was inspected through Composio on 2026-10-04.
