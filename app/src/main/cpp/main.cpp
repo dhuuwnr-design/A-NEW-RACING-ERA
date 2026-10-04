@@ -247,10 +247,7 @@ static void drawWorld(float dt){
         const auto& next=race.points[(i+3)%n];
         const float turn=1.0f-std::clamp(prev.tx*next.tx+prev.tz*next.tz,-1.0f,1.0f);
         const bool corner=turn>0.0025f;
-        if(corner){
-            addQuad((i/3)%2?lxA:lxA,a.elevation+.025f,lzA,(i/3)%2?lxB:lxB,b.elevation+.025f,lzB,b.x+bnx*aw,b.elevation+.025f,b.z+bnz*aw,a.x+anx*aw,a.elevation+.025f,a.z+anz*aw);
-            addQuad(rxA,a.elevation+.026f,rzA,rxB,b.elevation+.026f,rzB,b.x-bnx*bw,b.elevation+.026f,b.z-bnz*bw,a.x-anx*aw,a.elevation+.026f,a.z-anz*aw);
-        }
+        if(corner){ /* striped kerb geometry emitted below */ }
         addQuad(edgeLines,a.x+anx*(aw+.05f),a.elevation+.035f,a.z+anz*(aw+.05f),
                 b.x+bnx*(bw+.05f),b.elevation+.035f,b.z+bnz*(bw+.05f),
                 b.x+bnx*(bw+.16f),b.elevation+.035f,b.z+bnz*(bw+.16f),
@@ -430,7 +427,19 @@ static void drawWorld(float dt){
     draw(gantry,pv,.10f,.10f,.12f);draw(darkLights,pv,.02f,.02f,.025f);draw(redLights,pv,.95f,.03f,.02f);
 
     const float aiColors[7][3]={{.08f,.18f,.8f},{.95f,.75f,.05f},{.1f,.55f,.9f},{.75f,.08f,.12f},{.55f,.15f,.7f},{.1f,.75f,.35f},{.95f,.3f,.08f}};
-    for(size_t i=0;i<race.ai.size();i++){auto&a=race.ai[i];\n        // Let AI cars visually conform to the same 3D track surface as the player.\n        // The physics model owns their progress; this only derives a stable visual attitude\n        // from neighbouring track samples, avoiding a separate or conflicting AI physics model.\n        const size_t n=race.points.size();\n        size_t k=n?static_cast<size_t>(a.progress*float(n)):0; if(n) k%=n;\n        const auto& pm=race.points[(k+n-1)%n]; const auto& pp=race.points[(k+1)%n];\n        float ds=std::max(1.0f,std::sqrt((pp.x-pm.x)*(pp.x-pm.x)+(pp.z-pm.z)*(pp.z-pm.z)));\n        float pitch=std::atan2(pp.elevation-pm.elevation,ds);\n        float h0=std::atan2(pm.tx,pm.tz),h1=std::atan2(pp.tx,pp.tz),dh=h1-h0;\n        while(dh>3.14159265f)dh-=6.28318531f; while(dh<-3.14159265f)dh+=6.28318531f;\n        float roll=std::max(-0.055f,std::min(0.055f,dh*2.2f));\n        if(glbAssetsReady)drawGlbCar(playerGlb,a.x,a.z,a.elevation,a.yaw,pitch,roll,.72f,aiColors[i][0],aiColors[i][1],aiColors[i][2],pv);else drawCar(a.x,a.z,a.elevation,a.yaw,pitch,roll,0.0f,aiColors[i][0],aiColors[i][1],aiColors[i][2],pv);}
+    for(size_t i=0;i<race.ai.size();i++){auto&a=race.ai[i];
+        // Let AI cars visually conform to the same 3D track surface as the player.
+        // The physics model owns their progress; this only derives a stable visual attitude
+        // from neighbouring track samples, avoiding a separate or conflicting AI physics model.
+        const size_t n=race.points.size();
+        size_t k=n?static_cast<size_t>(a.progress*float(n)):0; if(n) k%=n;
+        const auto& pm=race.points[(k+n-1)%n]; const auto& pp=race.points[(k+1)%n];
+        float ds=std::max(1.0f,std::sqrt((pp.x-pm.x)*(pp.x-pm.x)+(pp.z-pm.z)*(pp.z-pm.z)));
+        float pitch=std::atan2(pp.elevation-pm.elevation,ds);
+        float h0=std::atan2(pm.tx,pm.tz),h1=std::atan2(pp.tx,pp.tz),dh=h1-h0;
+        while(dh>3.14159265f)dh-=6.28318531f; while(dh<-3.14159265f)dh+=6.28318531f;
+        float roll=std::max(-0.055f,std::min(0.055f,dh*2.2f));
+        if(glbAssetsReady)drawGlbCar(playerGlb,a.x,a.z,a.elevation,a.yaw,pitch,roll,.72f,aiColors[i][0],aiColors[i][1],aiColors[i][2],pv);else drawCar(a.x,a.z,a.elevation,a.yaw,pitch,roll,0.0f,aiColors[i][0],aiColors[i][1],aiColors[i][2],pv);}
     if(glbAssetsReady)drawGlbCar(playerGlb,car.x,car.y,race.playerElevation,car.yaw,car.pitch,car.roll,.72f,.78f,.03f,.025f,pv);else drawCar(car.x,car.y,race.playerElevation,car.yaw,car.pitch,car.roll,car.steeringAngle,.9f,.035f,.02f,pv);
 
     if(eglSwapBuffers(display,surface)!=EGL_TRUE)__android_log_print(ANDROID_LOG_WARN,"Apex","eglSwapBuffers failed: %d",eglGetError());
