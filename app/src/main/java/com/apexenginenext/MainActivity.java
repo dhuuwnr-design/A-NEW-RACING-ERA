@@ -109,7 +109,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             p.setColor(0xcc111820);c.drawRoundRect(getWidth()-150,24,getWidth()-24,92,14,14,p);
             p.setColor(0xffffffff);p.setTextSize(17);c.drawText("CAM",getWidth()-118,66,p);
             p.setColor(0xcc111820);c.drawRoundRect(getWidth()-190,132,getWidth()-24,298,18,18,p);
-            p.setColor(0xffd8dde2);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(7);map.reset();map.moveTo(getWidth()-155,155);map.cubicTo(getWidth()-100,145,getWidth()-65,175,getWidth()-75,205);map.cubicTo(getWidth()-88,245,getWidth()-145,230,getWidth()-158,265);map.stroke();
+            p.setColor(0xffd8dde2);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(7);map.reset();map.moveTo(getWidth()-155,155);map.cubicTo(getWidth()-100,145,getWidth()-65,175,getWidth()-75,205);map.cubicTo(getWidth()-88,245,getWidth()-145,230,getWidth()-158,265);c.drawPath(map,p);
             p.setStyle(Paint.Style.FILL);p.setColor(0xffff2f1f);c.drawCircle(getWidth()-117,205,6,p);
         }
         @Override public boolean onTouchEvent(MotionEvent e){
