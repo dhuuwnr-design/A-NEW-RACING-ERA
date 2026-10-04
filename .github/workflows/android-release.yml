@@ -5,6 +5,10 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -52,15 +56,27 @@ jobs:
           ./build-host/apex_track_asset_catalog_test
           ./build-host/apex_glb_loader_test
       - name: Build playable debug APK
+        id: apk
+        continue-on-error: true
         run: |
           set -o pipefail
-          gradle --no-daemon --stacktrace :app:assembleDebug 2>&1 | tee build-apk.log
-          status=${PIPESTATUS[0]}
-          if [ "$status" -ne 0 ]; then
-            echo "===== LAST 250 BUILD LOG LINES ====="
-            tail -250 build-apk.log
-            exit "$status"
-          fi
+          gradle --no-daemon --stacktrace --console=plain :app:assembleDebug 2>&1 | tee build-apk.log
+      - name: Publish APK build failure details
+        if: steps.apk.outcome == 'failure'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          {
+            echo "## Apex Engine Next APK build failure"
+            echo
+            echo "Commit: ${{ github.sha }}"
+            echo
+            echo '~~~text'
+            tail -180 build-apk.log
+            echo '~~~'
+          } > /tmp/apk-failure.md
+          gh issue create --title "CI APK build failure ${{ github.sha }}" --body-file /tmp/apk-failure.md
+          exit 1
       - name: Verify APK
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
