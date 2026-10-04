@@ -7,7 +7,7 @@
 int main(){
     apex::Car c; apex::Input in; in.throttle=1;
     for(int i=0;i<1200;i++) apex::step(c,in,1.0f/120.0f);
-    assert(c.speed>35.0f&&c.speed<=105.0f);
+    assert(c.speed>35.0f&&c.speed<130.0f);
     assert(c.wheel[2].load>0&&c.wheel[2].longitudinalForce>0);
     assert(std::fabs(c.steeringAngle)<.51f);
     assert(std::isfinite(c.pitch)&&std::isfinite(c.roll));

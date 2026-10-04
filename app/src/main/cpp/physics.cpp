@@ -22,7 +22,7 @@ void step(Car& c,const Input& in,float dt){
  fxR=clamp(fxR,-rearLongLimit,rearLongLimit);fxF=clamp(fxF,-frontLongLimit,frontLongLimit);
  for(int i=0;i<4;i++){const bool front=i<2;const float load=c.wheel[i].load,grip=mu*load,lat=front?fyF*.5f:fyR*.5f,lon=front?fxF*.5f:fxR*.5f;c.wheel[i].slipAngle=front?alphaF:alphaR;c.wheel[i].lateralForce=lat;c.wheel[i].longitudinalForce=lon;c.wheel[i].slipRatio=lon/std::max(1.0f,grip);}
  const float fx=fxF+fxR,fyBody=fyR+fyF*std::cos(c.steeringAngle),fxBody=fx*std::cos(c.steeringAngle)-fyF*std::sin(c.steeringAngle);
- c.longitudinalAccel=(fxBody-c.drag-rolling)/std::max(1.0f,c.mass);c.lateralAccel=(fyBody-c.mass*c.vx*c.yawRate)/std::max(1.0f,c.mass);
+ c.longitudinalAccel=(fxBody-c.drag-rolling)/std::max(1.0f,c.mass);c.lateralAccel=fyBody/std::max(1.0f,c.mass);
  c.vx=std::max(0.0f,c.vx+c.longitudinalAccel*dt);c.vy+=c.lateralAccel*dt;
  c.yawRate+=(lf*fyF*std::cos(c.steeringAngle)-lr*fyR)/Iz*dt;c.yawRate*=std::pow(0.985f,dt*60.0f);c.yaw+=c.yawRate*dt;
  const float sy=std::sin(c.yaw),cy=std::cos(c.yaw);c.x+=(sy*c.vx+cy*c.vy)*dt;c.y+=(cy*c.vx-sy*c.vy)*dt;c.speed=std::sqrt(c.vx*c.vx+c.vy*c.vy);
