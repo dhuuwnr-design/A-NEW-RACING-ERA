@@ -25,13 +25,13 @@ if [ ! -x "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" ]; then
 fi
 
 yes | sdkmanager --licenses >/dev/null 2>&1 || true
-sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1" >/dev/null
+sdkmanager "platform-tools" "platforms;android-35" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.22.1" >/dev/null
 
-if [ ! -d /content/gradle-8.10.2 ]; then
-  wget -q https://services.gradle.org/distributions/gradle-8.10.2-bin.zip -O /tmp/gradle.zip
+if [ ! -d /content/gradle-9.5.0 ]; then
+  wget -q https://services.gradle.org/distributions/gradle-9.5.0-bin.zip -O /tmp/gradle.zip
   unzip -q /tmp/gradle.zip -d /content
 fi
-export PATH="/content/gradle-8.10.2/bin:$PATH"
+export PATH="/content/gradle-9.5.0/bin:$PATH"
 
 echo "== Host tests =="
 rm -rf build-host

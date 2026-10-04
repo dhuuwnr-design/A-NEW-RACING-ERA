@@ -30,13 +30,12 @@ jobs:
           "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
       - name: Install Android build toolchain
         run: |
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
+          sdkmanager "platform-tools" "platforms;android-35" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
           yes | sdkmanager --licenses >/dev/null || true
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
-          gradle-version: "8.10.2"
-
+          gradle-version: "9.5.0"
       - name: Configure host tests
         continue-on-error: true
         run: cmake -S app/src/main/cpp -B build-host
@@ -52,7 +51,6 @@ jobs:
           ./build-host/apex_asset_catalog_test
           ./build-host/apex_track_asset_catalog_test
           ./build-host/apex_glb_loader_test
-
       - name: Build playable debug APK
         run: gradle --no-daemon :app:assembleDebug
       - name: Verify APK
