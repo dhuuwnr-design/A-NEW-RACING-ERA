@@ -40,13 +40,10 @@ jobs:
         with:
           gradle-version: "9.5.0"
       - name: Configure host tests
-        continue-on-error: true
         run: cmake -S app/src/main/cpp -B build-host
       - name: Build host tests
-        continue-on-error: true
         run: cmake --build build-host --target apex_physics_test apex_track_test apex_asset_manifest_test apex_asset_catalog_test apex_track_asset_catalog_test apex_glb_loader_test
       - name: Run host tests
-        continue-on-error: true
         run: |
           ./build-host/apex_physics_test
           ./build-host/apex_track_test
@@ -60,22 +57,6 @@ jobs:
         run: |
           set -o pipefail
           gradle --no-daemon --stacktrace --console=plain :app:assembleDebug 2>&1 | tee build-apk.log
-      - name: Publish APK build failure details
-        if: steps.apk.outcome == 'failure'
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          {
-            echo "## Apex Engine Next APK build failure"
-            echo
-            echo "Commit: ${{ github.sha }}"
-            echo
-            echo '~~~text'
-            tail -180 build-apk.log
-            echo '~~~'
-          } > /tmp/apk-failure.md
-          gh api --method POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -f body="$(cat /tmp/apk-failure.md)" || true
-          exit 1
       - name: Verify APK
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
@@ -88,10 +69,3 @@ jobs:
           name: apex-engine-next-debug-apk
           path: app/build/outputs/apk/debug/app-debug.apk
           if-no-files-found: error
-      - name: Upload build diagnostics
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: apex-engine-next-build-diagnostics
-          path: build-apk.log
-          if-no-files-found: ignore

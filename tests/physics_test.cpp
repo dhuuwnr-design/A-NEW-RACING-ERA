@@ -24,9 +24,9 @@ int main(){
     assert(std::fabs(c.roll)>0.0001f);
 
     apex::Race race;race.reset(c);
-    assert(race.points.size()==240&&race.ai.size()==7);
+    assert(race.points.size()==320&&race.ai.size()==7);
     assert(race.position==1);assert(!race.finished&&race.raceTime==0);
-    assert(race.trackLength>300.0f&&race.trackLength<700.0f);
+    assert(race.trackLength>6900.0f&&race.trackLength<7100.0f);
     assert(!race.started&&race.startTimer>2.9f);
     float minElevation=999,maxElevation=-999;
     for(const auto&p:race.points){minElevation=std::min(minElevation,p.elevation);maxElevation=std::max(maxElevation,p.elevation);assert(p.width>4.4f&&p.width<5.6f);}
