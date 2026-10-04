@@ -25,7 +25,7 @@ struct Race {
     std::vector<TrackPoint> points;
     std::vector<AI> ai;
     float trackLength=1,playerProgress=0,lastProgress=0,playerElevation=0;
-    float raceTime=0,finishTime=-1,startTimer=3.0f,goTimer=0;
+    float raceTime=0,finishTime=-1,startTimer=3.0f,goTimer=0,offTrackDistance=0;
     float gapToLeader=0,intervalToAhead=0;
     int completedLaps=0;
     int lap=1,totalLaps=5,position=1,previousPosition=1,positionDelta=0;

@@ -57,6 +57,12 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private static native String nativeTrackName();
     private static native void nativeTouch(float steer,float throttle,float brake);
     private static native float nativeSpeed();
+    private static native float nativeThrottle();
+    private static native float nativeBrake();
+    private static native float nativeSteerInput();
+    private static native float nativeOffTrackDistance();
+    private static native float nativeProgress();
+    private static native float nativeFps();
     private static native float nativeSteering();
     private static native int nativeLap();
     private static native int nativePosition();
@@ -124,7 +130,18 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(5);p.setColor(0xccffffff);float wc=leftHanded?getWidth()-80:80,wy=getHeight()-95;c.drawCircle(wc,wy,54,p);c.save();c.rotate((float)(nativeSteering()*52.0),wc,wy);c.drawLine(wc,wy-44,wc,wy+44,p);c.drawLine(wc-31,wy+19,wc+31,wy+19,p);c.restore();p.setStyle(Paint.Style.FILL);p.setTextSize(15);c.drawText(tiltSteerEnabled?"TILT":"STEER",wc-27,getHeight()-24,p);
             p.setColor(0xcc111820);c.drawRoundRect(getWidth()-150,24,getWidth()-24,92,14,14,p);p.setColor(0xffffffff);p.setTextSize(17);c.drawText("CAM",getWidth()-118,66,p);
             p.setColor(0xcc111820);c.drawRoundRect(getWidth()-300,24,getWidth()-174,92,14,14,p);p.setColor(0xffffffff);p.setTextSize(14);c.drawText("CTRL",getWidth()-270,66,p);
-            p.setTextSize(13);String mode=(leftHanded?"R":"L")+" "+(tiltSteerEnabled?"TILT":"TOUCH")+" "+(steeringAssist?"ASSIST":"RAW");c.drawText(mode,getWidth()-300,108,p);
+            p.setTextSize(13);String mode=(leftHanded?"R":"L")+" "+(tiltSteerEnabled?"TILT":"TOUCH")+" "+(steeringAssist?"ASSIST":"RAW");c.drawText(mode,getWidth()-300,108,p);            // Developer telemetry overlay: intentionally explicit so on-device testing can report the exact state.
+            p.setColor(0xdd05070b);p.setTextSize(13);
+            c.drawRect(10,Math.max(210,getHeight()*.48f),245,Math.max(210,getHeight()*.48f)+118,p);
+            p.setColor(0xff7fffd4);
+            float oy=Math.max(232,getHeight()*.48f+22);
+            c.drawText(String.format(java.util.Locale.US,"DBG  %.1f km/h   FPS %.0f",nativeSpeed(),nativeFps()),18,oy,p);
+            c.drawText(String.format(java.util.Locale.US,"THR %.2f  BRK %.2f  STR %.2f",nativeThrottle(),nativeBrake(),nativeSteerInput()),18,oy+20,p);
+            c.drawText(String.format(java.util.Locale.US,"OFF %.2f m  PROG %.3f",nativeOffTrackDistance(),nativeProgress()),18,oy+40,p);
+            c.drawText(String.format(java.util.Locale.US,"YAW %.2f  LAT %.2f g",nativeSteering(),0.0f),18,oy+60,p);
+            c.drawText(tiltSteerEnabled?"CONTROL: TILT":("CONTROL: "+(leftHanded?"RIGHT":"LEFT")+" TOUCH"),18,oy+80,p);
+            c.drawText(steeringAssist?"ASSIST: ON":"ASSIST: OFF",18,oy+100,p);
+
             p.setColor(0x99ffffff);p.setStyle(Paint.Style.STROKE);p.setStrokeWidth(5);map.reset();map.moveTo(getWidth()-155,155);map.cubicTo(getWidth()-100,145,getWidth()-65,175,getWidth()-75,205);map.cubicTo(getWidth()-88,245,getWidth()-145,230,getWidth()-158,265);c.drawPath(map,p);p.setStyle(Paint.Style.FILL);p.setColor(0xffff2f1f);c.drawCircle(getWidth()-117,205,6,p);
         }
         @Override public boolean onTouchEvent(MotionEvent e){

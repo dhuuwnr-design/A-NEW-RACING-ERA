@@ -20,7 +20,7 @@ static int width=1,height=1; static std::mutex mutex;
 static AAssetManager* assetManager=nullptr;
 static apex::GlbMesh playerGlb,grandstandGlb,pitGlb,barrierGlb,signageGlb,vegetationGlb,landmarkGlb;
 static bool glbAssetsReady=false; static apex::Car car; static apex::Input input; static apex::Race race;
-static float cameraYaw=0,cameraHeight=3.2f;
+static float cameraYaw=0,cameraHeight=3.2f,renderFps=0;
 
 static const char* VS=R"(#version 300 es
 layout(location=0) in vec3 aPos;
@@ -146,7 +146,7 @@ static void drawWorld(float dt){
     // Keep simulation deterministic even when Android delivers an uneven render frame.
     // Rendering may vary with refresh rate, but vehicle physics and race state advance at
     // a fixed 120 Hz with a bounded catch-up budget.
-    dt=std::min(std::max(dt,0.0f),0.10f);
+    dt=std::min(std::max(dt,0.0f),0.10f);if(dt>0)renderFps+=((1.0f/dt)-renderFps)*std::min(1.0f,dt*3.0f);
     physicsAccumulator=std::min(physicsAccumulator+dt,0.10f);
     constexpr float fixedStep=1.0f/120.0f;
     int steps=0;
@@ -457,6 +457,12 @@ extern "C" JNIEXPORT void JNICALL Java_com_apexenginenext_MainActivity_nativeNex
 extern "C" JNIEXPORT void JNICALL Java_com_apexenginenext_MainActivity_nativeFrame(JNIEnv*,jclass,jfloat dt){std::lock_guard<std::mutex>l(mutex);if(display!=EGL_NO_DISPLAY&&surface!=EGL_NO_SURFACE)drawWorld(dt);}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeSpeed(JNIEnv*,jclass){return car.speed*3.6f;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeSteering(JNIEnv*,jclass){return car.steeringAngle;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeThrottle(JNIEnv*,jclass){return input.throttle;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeBrake(JNIEnv*,jclass){return input.brake;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeSteerInput(JNIEnv*,jclass){return input.steer;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeOffTrackDistance(JNIEnv*,jclass){return race.offTrackDistance;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeProgress(JNIEnv*,jclass){return race.playerProgress;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeFps(JNIEnv*,jclass){return renderFps;}
 extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativeLap(JNIEnv*,jclass){return race.lap;}
 extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativePosition(JNIEnv*,jclass){return race.position;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeRaceTime(JNIEnv*,jclass){return race.finished?race.finishTime:race.raceTime;}
