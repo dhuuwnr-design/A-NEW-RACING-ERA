@@ -6,8 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  issues: write
+  contents: write
 
 jobs:
   build:
@@ -75,7 +74,7 @@ jobs:
             tail -180 build-apk.log
             echo '~~~'
           } > /tmp/apk-failure.md
-          gh issue create --title "CI APK build failure ${{ github.sha }}" --body-file /tmp/apk-failure.md
+          gh api --method POST "repos/${GITHUB_REPOSITORY}/commits/${GITHUB_SHA}/comments" -f body="$(cat /tmp/apk-failure.md)" || true
           exit 1
       - name: Verify APK
         run: |
