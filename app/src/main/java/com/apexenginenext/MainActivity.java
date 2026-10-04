@@ -63,6 +63,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
     private static native float nativeOffTrackDistance();
     private static native float nativeProgress();
     private static native float nativeFps();
+    private static native float nativeLateralG();
     private static native float nativeSteering();
     private static native int nativeLap();
     private static native int nativePosition();
@@ -138,7 +139,7 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             c.drawText(String.format(java.util.Locale.US,"DBG  %.1f km/h   FPS %.0f",nativeSpeed(),nativeFps()),18,oy,p);
             c.drawText(String.format(java.util.Locale.US,"THR %.2f  BRK %.2f  STR %.2f",nativeThrottle(),nativeBrake(),nativeSteerInput()),18,oy+20,p);
             c.drawText(String.format(java.util.Locale.US,"OFF %.2f m  PROG %.3f",nativeOffTrackDistance(),nativeProgress()),18,oy+40,p);
-            c.drawText(String.format(java.util.Locale.US,"YAW %.2f  LAT %.2f g",nativeSteering(),0.0f),18,oy+60,p);
+            c.drawText(String.format(java.util.Locale.US,"YAW %.2f  LAT %.2f g",nativeSteering(),nativeLateralG()),18,oy+60,p);
             c.drawText(tiltSteerEnabled?"CONTROL: TILT":("CONTROL: "+(leftHanded?"RIGHT":"LEFT")+" TOUCH"),18,oy+80,p);
             c.drawText(steeringAssist?"ASSIST: ON":"ASSIST: OFF",18,oy+100,p);
 
