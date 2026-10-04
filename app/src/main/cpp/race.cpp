@@ -36,13 +36,22 @@ static std::vector<TrackPoint> buildTrack(int trackIndex){
     }
     return out;
 }
-Race::Race():points(buildTrack(trackIndex)),ai(7){trackLength=0;for(size_t i=0;i<points.size();i++){const auto&a=points[i],&b=points[(i+1)%points.size()];trackLength+=std::hypot(b.x-a.x,b.z-a.z);}if(trackLength<1)trackLength=1;float cumulative=0;points[0].progress=0;for(size_t i=1;i<points.size();i++){const auto&a=points[i-1],&b=points[i];cumulative+=std::hypot(b.x-a.x,b.z-a.z);points[i].progress=cumulative/trackLength;}}
+void Race::rebuildTrackMetrics(){
+ trackLength=0.0f;
+ if(points.empty()){trackLength=1.0f;return;}
+ for(size_t i=0;i<points.size();i++){const auto&a=points[i],&b=points[(i+1)%points.size()];trackLength+=std::hypot(b.x-a.x,b.z-a.z);}
+ trackLength=std::max(1.0f,trackLength);
+ float cumulative=0.0f; points[0].progress=0.0f;
+ for(size_t i=1;i<points.size();i++){const auto&a=points[i-1],&b=points[i];cumulative+=std::hypot(b.x-a.x,b.z-a.z);points[i].progress=cumulative/trackLength;}
+}
+Race::Race():points(buildTrack(trackIndex)),ai(7){rebuildTrackMetrics();}
 void Race::reset(Car&car){auto&p=points[0];car.x=p.x;car.y=p.z;car.yaw=std::atan2(p.tx,p.tz);car.speed=0;car.vx=0;car.vy=0;car.yawRate=0;playerProgress=lastProgress=0;playerElevation=p.elevation;raceTime=0;finishTime=-1;startTimer=3;goTimer=0;lap=1;position=1;previousPosition=1;positionDelta=0;playerPoint=0;started=false;finished=false;for(int i=0;i<(int)ai.size();i++){ai[i].progress=.012f+float(i)*.006f;ai[i].laps=0;ai[i].previousProgress=ai[i].progress;ai[i].lapTime=0;ai[i].lastLapTime=0;ai[i].bestLapTime=-1;ai[i].finished=false;ai[i].speed=29+float(i%3)*1.6f;ai[i].lineOffset=(float(i)-3)*.38f;ai[i].elevation=points[int(ai[i].progress*points.size())%points.size()].elevation;}}
 const char* Race::trackName() const { return REAL_TRACKS[trackIndex%REAL_TRACK_COUNT].name; }
 
 void Race::nextTrack(Car& car){
     trackIndex=(trackIndex+1)%REAL_TRACK_COUNT;
     points=buildTrack(trackIndex);
+    rebuildTrackMetrics();
     reset(car);
 }
 

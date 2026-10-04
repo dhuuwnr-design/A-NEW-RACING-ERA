@@ -32,6 +32,7 @@ struct Race {
     int playerPoint=0;
     bool started=false,finished=false;
     Race();
+    void rebuildTrackMetrics();
     void reset(Car& car);
     void update(Car& car,float dt);
     void nextTrack(Car& car);
