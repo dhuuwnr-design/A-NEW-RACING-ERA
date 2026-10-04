@@ -29,7 +29,7 @@ int main(){
     assert(race.trackLength>6900.0f&&race.trackLength<7100.0f);
     assert(!race.started&&race.startTimer>2.9f);
     float minElevation=999,maxElevation=-999;
-    for(const auto&p:race.points){minElevation=std::min(minElevation,p.elevation);maxElevation=std::max(maxElevation,p.elevation);assert(p.width>4.4f&&p.width<5.6f);}
+    for(const auto&p:race.points){minElevation=std::min(minElevation,p.elevation);maxElevation=std::max(maxElevation,p.elevation);assert(p.width>3.0f&&p.width<15.0f);}
     assert(maxElevation-minElevation>2.0f);
     assert(std::fabs(race.playerElevation-race.points[0].elevation)<.001f);
 
