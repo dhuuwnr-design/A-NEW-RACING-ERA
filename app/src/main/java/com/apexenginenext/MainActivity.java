@@ -10,54 +10,31 @@ import android.graphics.*;
 public final class MainActivity extends Activity implements SurfaceHolder.Callback {
     private GameView game; private Ui ui;
     static { System.loadLibrary("apex"); }
-
-    @Override public void onCreate(Bundle s){
-        super.onCreate(s); setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);
-        getWindow().setNavigationBarColor(Color.BLACK);
-        FrameLayout root=new FrameLayout(this);
-        game=new GameView(); game.getHolder().addCallback(this); ui=new Ui();
-        root.addView(game,new FrameLayout.LayoutParams(-1,-1)); root.addView(ui,new FrameLayout.LayoutParams(-1,-1));
-        setContentView(root);
-    }
+    @Override public void onCreate(Bundle s){super.onCreate(s);setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE);getWindow().setNavigationBarColor(Color.BLACK);FrameLayout root=new FrameLayout(this);game=new GameView();game.getHolder().addCallback(this);ui=new Ui();root.addView(game,new FrameLayout.LayoutParams(-1,-1));root.addView(ui,new FrameLayout.LayoutParams(-1,-1));setContentView(root);}
     @Override public void surfaceCreated(SurfaceHolder h){nativeStart(h.getSurface(),getAssets());game.running=true;game.post(game.frame);ui.loading();}
     @Override public void surfaceDestroyed(SurfaceHolder h){game.running=false;nativeStop();}
     @Override public void surfaceChanged(SurfaceHolder h,int f,int w,int z){nativeResize(w,z);}
-
-    private static native void nativeStart(Surface s,android.content.res.AssetManager a);
-    private static native void nativeStop(); private static native void nativeResize(int w,int h);
-    private static native void nativeFrame(float dt); private static native void nativeToggleCamera();
-    private static native String nativeTrackName(); private static native void nativeTouch(float s,float t,float b);
-    private static native float nativeSpeed(); private static native float nativeFps(); private static native int nativeGear(); private static native float nativeRpm();
-    private static native int nativeLap(); private static native int nativePosition();
-    private static native boolean nativeFinished();
-
+    private static native void nativeStart(Surface s,android.content.res.AssetManager a); private static native void nativeStop(); private static native void nativeResize(int w,int h); private static native void nativeFrame(float dt); private static native void nativeToggleCamera();
+    private static native String nativeTrackName(); private static native void nativeTouch(float s,float t,float b); private static native float nativeSpeed(); private static native float nativeFps(); private static native int nativeGear(); private static native float nativeRpm(); private static native int nativeLap(); private static native int nativePosition(); private static native boolean nativeFinished();
     final class GameView extends SurfaceView {
         boolean running;
-        final Runnable frame=new Runnable(){long last=System.nanoTime();public void run(){
-            if(!running)return; long n=System.nanoTime(); float dt=Math.min(.05f,(n-last)*1e-9f);last=n;
-            nativeFrame(dt);postOnAnimation(this);
-        }};
+        final Runnable frame=new Runnable(){long last=System.nanoTime();public void run(){if(!running)return;long n=System.nanoTime();float dt=Math.min(.05f,(n-last)*1e-9f);last=n;nativeFrame(dt);postOnAnimation(this);}};
         GameView(){super(MainActivity.this);setFocusable(true);}
         boolean hit(float x,float y,float l,float t,float r,float b){return x>=l&&x<=r&&y>=t&&y<=b;}
+        private int steerPointer=-1,throttlePointer=-1,brakePointer=-1;
         @Override public boolean onTouchEvent(MotionEvent e){
-            int a=e.getActionMasked();
-            if(a==MotionEvent.ACTION_CANCEL || a==MotionEvent.ACTION_UP){nativeTouch(0,0,0);return true;}
             float w=getWidth(),h=getHeight(),ss=Math.min(w*.115f,h*.19f),gap=Math.min(w*.018f,h*.025f),sy=h*.765f;
             float ll=w*.035f,lr=ll+ss,rl=lr+gap,rr=rl+ss,pl=w*.795f,pr=w*.955f;
-            float st=0,th=0,br=0;
-            for(int i=0;i<e.getPointerCount();i++){float x=e.getX(i),y=e.getY(i);
-                if(hit(x,y,ll,sy,lr,h*.96f))st=-1;
-                if(hit(x,y,rl,sy,rr,h*.96f))st=1;
-                if(hit(x,y,pl,h*.60f,pr,h*.77f))th=1;
-                if(hit(x,y,pl,h*.79f,pr,h*.96f))br=1;
-            }
-            nativeTouch(st,th,br);return true;
+            int a=e.getActionMasked(),ai=e.getActionIndex();
+            if(a==MotionEvent.ACTION_CANCEL){steerPointer=throttlePointer=brakePointer=-1;nativeTouch(0,0,0);return true;}
+            if(a==MotionEvent.ACTION_DOWN||a==MotionEvent.ACTION_POINTER_DOWN){int id=e.getPointerId(ai);float x=e.getX(ai),y=e.getY(ai);if(steerPointer<0){if(hit(x,y,ll,sy,lr,h*.96f)||hit(x,y,rl,sy,rr,h*.96f))steerPointer=id;}if(throttlePointer<0&&hit(x,y,pl,h*.60f,pr,h*.77f))throttlePointer=id;if(brakePointer<0&&hit(x,y,pl,h*.79f,pr,h*.96f))brakePointer=id;}
+            if(a==MotionEvent.ACTION_POINTER_UP||a==MotionEvent.ACTION_UP){int id=e.getPointerId(ai);if(steerPointer==id)steerPointer=-1;if(throttlePointer==id)throttlePointer=-1;if(brakePointer==id)brakePointer=-1;}
+            float st=0,th=0,br=0;if(steerPointer>=0){int i=e.findPointerIndex(steerPointer);if(i>=0){float x=e.getX(i),y=e.getY(i);if(hit(x,y,ll,sy,lr,h*.96f))st=-1;else if(hit(x,y,rl,sy,rr,h*.96f))st=1;}}
+            if(throttlePointer>=0&&e.findPointerIndex(throttlePointer)>=0)th=1;if(brakePointer>=0&&e.findPointerIndex(brakePointer)>=0)br=1;nativeTouch(st,th,br);return true;
         }
     }
-
     final class Ui extends View {
-        final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); int screen=0; long loadAt;
-        final int RED=0xffe31b2d, WHITE=0xfff4f5f7, MUTED=0xff9aa3ad, PANEL=0xdd0b1016, LINE=0xff303944;
+        final Paint p=new Paint(Paint.ANTI_ALIAS_FLAG); int screen=0; long loadAt; final int RED=0xffe31b2d,WHITE=0xfff4f5f7,MUTED=0xff9aa3ad,PANEL=0xdd0b1016,LINE=0xff303944;
         Ui(){super(MainActivity.this);setLayerType(View.LAYER_TYPE_SOFTWARE,null);}
         void loading(){screen=0;loadAt=System.currentTimeMillis();postDelayed(()->{screen=1;invalidate();},1500);}
         void text(Canvas c,String s,float x,float y,float size,int color,boolean bold){p.setStyle(Paint.Style.FILL);p.setColor(color);p.setTextSize(size);p.setTypeface(bold?Typeface.DEFAULT_BOLD:Typeface.DEFAULT);c.drawText(s,x,y,p);}
