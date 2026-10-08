@@ -42,14 +42,14 @@ jobs:
           set -euo pipefail
           mkdir -p app/src/main/assets/cars app/src/main/assets/environment
           page="$(curl -fsSL https://kenney.nl/assets/racing-kit)"
-          url="$(printf '%s' "$page" | grep -oE 'https://kenney\.nl/media/pages/assets/racing-kit/[^"]+/kenney_racing-kit\.zip' | head -n1 || true)"
+          url="$(printf '%s' "$page" | grep -oE 'https://kenney\.nl/media/pages/assets/racing-kit/[^"]+/kenney_racing-kit\.zip' | sed -n '1p' || true)"
           test -n "$url"
           curl -fL "$url" -o /tmp/kenney_racing-kit.zip
           rm -rf /tmp/kenney_racing-kit && mkdir -p /tmp/kenney_racing-kit
           unzip -q /tmp/kenney_racing-kit.zip -d /tmp/kenney_racing-kit
-          first="$(find /tmp/kenney_racing-kit -type f -iname '*.glb' | head -n1)"
+          first="$(find /tmp/kenney_racing-kit -type f -iname '*.glb' -print -quit)"
           test -n "$first"
-          pick(){ p="$1"; out="$2"; f="$(find /tmp/kenney_racing-kit -type f -iname '*.glb' | grep -Ei "$p" | head -n1 || true)"; test -n "$f" || f="$first"; cp "$f" "$out"; }
+          pick(){ p="$1"; out="$2"; f="$(find /tmp/kenney_racing-kit -type f -iname '*.glb' -print | grep -Ei "$p" | sed -n '1p' || true)"; test -n "$f" || f="$first"; cp "$f" "$out"; }
           pick 'kart|car|vehicle|racer' app/src/main/assets/cars/player.glb
           pick 'kart|car|vehicle|racer' app/src/main/assets/cars/ai.glb
           pick 'grandstand|stand|spectator' app/src/main/assets/environment/grandstand.glb
@@ -60,6 +60,7 @@ jobs:
           pick 'tower|building|structure|arch' app/src/main/assets/environment/landmark.glb
           printf '%s\n' 'Kenney Racing Kit — CC0 1.0 Universal' 'Official source: https://kenney.nl/assets/racing-kit' > app/src/main/assets/ASSET_LICENSES.txt
           du -sh app/src/main/assets
+          find app/src/main/assets -type f -printf '%p %k KB\n' | sort
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
