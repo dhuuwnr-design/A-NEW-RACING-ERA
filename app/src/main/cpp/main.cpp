@@ -72,7 +72,7 @@ static void perspective(float*m,float fovy,float aspect,float zn,float zf){
 }
 static void lookAt(float*m,float ex,float ey,float ez,float cx,float cy,float cz){
     float fx=cx-ex,fy=cy-ey,fz=cz-ez,fl=std::sqrt(fx*fx+fy*fy+fz*fz);if(fl<.0001f)fl=1;
-    fx/=fl;fy/=fl;fz/=fl;float sx=-fz,sy=0,sz=fx,sl=std::sqrt(sx*sx+sy*sy+sz*sz);
+    fx/=fl;fy/=fl;fz/=fl;float sx=fz,sy=0,sz=-fx,sl=std::sqrt(sx*sx+sy*sy+sz*sz);
     if(sl<.0001f){sx=1;sy=0;sz=0;}else{sx/=sl;sy/=sl;sz/=sl;}
     float tx=sy*fz-sz*fy,ty=sz*fx-sx*fz,tz=sx*fy-sy*fx;
     m[0]=sx;m[4]=sy;m[8]=sz;m[12]=-(sx*ex+sy*ey+sz*ez);m[1]=tx;m[5]=ty;m[9]=tz;m[13]=-(tx*ex+ty*ey+tz*ez);
