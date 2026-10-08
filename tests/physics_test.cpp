@@ -16,6 +16,11 @@ int main(){
  float yaw0=c.yaw;in.brake=0;in.throttle=.65f;in.steer=.55f;
  for(int i=0;i<120;i++) apex::step(c,in,1.0f/120.0f);
  assert(std::fabs(c.yaw-yaw0)>.01f&&std::fabs(c.lateralAccel)>.01f&&std::fabs(c.roll)>.0001f);
+ assert(std::isfinite(c.vy)&&std::fabs(c.vy)<std::max(8.0f,c.speed*.20f));
+ const float yawTurning=c.yaw; in.steer=0;
+ for(int i=0;i<240;i++) apex::step(c,in,1.0f/120.0f);
+ assert(std::isfinite(c.vy)&&std::fabs(c.vy)<std::max(5.0f,c.speed*.12f));
+ assert(std::fabs(c.yaw-yawTurning)<2.5f);
  apex::Race race;race.reset(c);
  assert(race.points.size()==320&&race.ai.size()==7&&race.position==1&&!race.finished&&race.raceTime==0);
  assert(race.trackLength>6900.0f&&race.trackLength<7100.0f);
