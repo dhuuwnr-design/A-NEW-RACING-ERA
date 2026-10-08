@@ -463,6 +463,8 @@ extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeS
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeOffTrackDistance(JNIEnv*,jclass){return race.offTrackDistance;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeProgress(JNIEnv*,jclass){return race.playerProgress;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeFps(JNIEnv*,jclass){return renderFps;}
+extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativeGear(JNIEnv*,jclass){return car.gear;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeRpm(JNIEnv*,jclass){return car.rpm;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeLateralG(JNIEnv*,jclass){return car.lateralAccel/9.81f;}
 extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativeLap(JNIEnv*,jclass){return race.lap;}
 extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativePosition(JNIEnv*,jclass){return race.position;}
