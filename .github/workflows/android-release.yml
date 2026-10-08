@@ -2,7 +2,7 @@ name: Apex Engine Next Android Release
 
 on:
   push:
-    branches: [main]
+    branches: [main, apex/powertrain-foundation]
   workflow_dispatch:
 
 permissions:
