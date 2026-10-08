@@ -93,10 +93,11 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             text(c,"APEX",w*.045f,h*.12f,58,Color.WHITE,true);text(c,"ENGINE NEXT",w*.19f,h*.12f,19,0xffc6ccd4,true);
             text(c,"REAL TRACKS  /  REAL PHYSICS  /  ANDROID",w*.045f,h*.18f,11,0xff8e98a5,true);
             String[] labels={"CAREER","QUICK RACE","MULTIPLAYER","GARAGE","SETTINGS"};
+            boolean[] locked={true,false,true,true,false};
             float l=w*.045f,r=w*.34f,bh=h*.075f,g=h*.018f,t=h*.25f;
-            for(int i=0;i<labels.length;i++){panel(c,l,t+i*(bh+g),r,t+i*(bh+g)+bh,i==0);text(c,labels[i],l+32,t+i*(bh+g)+bh*.64f,16,Color.WHITE,true);}
+            for(int i=0;i<labels.length;i++){boolean on=!locked[i];panel(c,l,t+i*(bh+g),r,t+i*(bh+g)+bh,on);text(c,labels[i],l+32,t+i*(bh+g)+bh*.64f,16,on?Color.WHITE:0xff727b86,true);if(locked[i])text(c,"LOCKED",r-78,t+i*(bh+g)+bh*.64f,10,0xff727b86,true);else text(c,"›",r-26,t+i*(bh+g)+bh*.64f,25,Color.WHITE,true);}
             panel(c,w*.76f,h*.60f,w*.96f,h*.88f,false);text(c,"NEXT RACE",w*.785f,h*.67f,13,0xffe51b2e,true);
-            text(c,"MONACO",w*.785f,h*.74f,25,Color.WHITE,true);text(c,"GRAND PRIX",w*.785f,h*.79f,12,0xff9ba4ae,true);
+            text(c,nativeTrackName(),w*.785f,h*.74f,25,Color.WHITE,true);text(c,"GRAND PRIX",w*.785f,h*.79f,12,0xff9ba4ae,true);
             text(c,"5 LAPS  •  DRY",w*.785f,h*.84f,11,0xffd3d7dc,true);
             text(c,"LEVEL 1",w*.80f,h*.11f,13,Color.WHITE,true);text(c,"12,450 CR",w*.88f,h*.11f,13,0xffffc43d,true);
         }
@@ -121,7 +122,9 @@ public final class MainActivity extends Activity implements SurfaceHolder.Callba
             if(e.getActionMasked()!=MotionEvent.ACTION_UP)return screen!=2;
             float x=e.getX(),y=e.getY(),w=getWidth(),h=getHeight();
             if(screen==1){float l=w*.045f,r=w*.34f,bh=h*.075f,g=h*.018f,t=h*.25f;
-                for(int i=0;i<5;i++){float a=t+i*(bh+g);if(hit(x,y,l,a,r,a+bh)){screen=(i==4?3:2);invalidate();return true;}}return true;}
+                int index=(int)((y-t)/(bh+g));
+                if(index>=0&&index<5){float a=t+index*(bh+g);if(hit(x,y,l,a,r,a+bh)){if(index==1)screen=2;else if(index==4)screen=3;invalidate();return true;}}
+                return true;}
             if(screen==3){if(hit(x,y,35,285,270,375)){screen=1;invalidate();}return true;}
             if(screen==2&&x>w-140&&y<90){nativeToggleCamera();return true;} return false;
         }
