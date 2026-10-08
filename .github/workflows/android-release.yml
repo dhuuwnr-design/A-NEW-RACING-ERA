@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
   build:
@@ -30,11 +30,36 @@ jobs:
             mv /tmp/android-cmdline/cmdline-tools "$ANDROID_HOME/cmdline-tools/latest"
           fi
           echo "$ANDROID_HOME/cmdline-tools/latest/bin" >> "$GITHUB_PATH"
-          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --version
       - name: Install Android build toolchain
         run: |
           sdkmanager "platform-tools" "platforms;android-35" "build-tools;36.0.0" "ndk;27.2.12479018" "cmake;3.22.1"
           yes | sdkmanager --licenses >/dev/null || true
+      - name: Fetch and stage real CC0 3D racing assets
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p app/src/main/assets/cars app/src/main/assets/environment
+          page="$(curl -fsSL https://kenney.nl/assets/racing-kit)"
+          url="$(printf '%s' "$page" | grep -oE 'https://kenney\.nl/media/pages/assets/racing-kit/[^"]+/kenney_racing-kit\.zip' | head -n1 || true)"
+          test -n "$url"
+          curl -fL "$url" -o /tmp/kenney_racing-kit.zip
+          rm -rf /tmp/kenney_racing-kit && mkdir -p /tmp/kenney_racing-kit
+          unzip -q /tmp/kenney_racing-kit.zip -d /tmp/kenney_racing-kit
+          first="$(find /tmp/kenney_racing-kit -type f -iname '*.glb' | head -n1)"
+          test -n "$first"
+          pick(){ p="$1"; out="$2"; f="$(find /tmp/kenney_racing-kit -type f -iname '*.glb' | grep -Ei "$p" | head -n1 || true)"; test -n "$f" || f="$first"; cp "$f" "$out"; }
+          pick 'kart|car|vehicle|racer' app/src/main/assets/cars/player.glb
+          pick 'kart|car|vehicle|racer' app/src/main/assets/cars/ai.glb
+          pick 'grandstand|stand|spectator' app/src/main/assets/environment/grandstand.glb
+          pick 'pit|garage|building' app/src/main/assets/environment/pit_building.glb
+          pick 'barrier|fence|wall|guardrail' app/src/main/assets/environment/barrier.glb
+          pick 'sign|board|flag' app/src/main/assets/environment/signage.glb
+          pick 'tree|bush|plant' app/src/main/assets/environment/vegetation.glb
+          pick 'tower|building|structure|arch' app/src/main/assets/environment/landmark.glb
+          printf '%s
+' 'Kenney Racing Kit — CC0 1.0 Universal' 'Official source: https://kenney.nl/assets/racing-kit' > app/src/main/assets/ASSET_LICENSES.txt
+          du -sh app/src/main/assets
+          find app/src/main/assets -type f -printf '%p %k KB\n' | sort
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
         with:
@@ -52,18 +77,16 @@ jobs:
           ./build-host/apex_track_asset_catalog_test
           ./build-host/apex_glb_loader_test
       - name: Build playable debug APK
-        id: apk
-        continue-on-error: true
-        run: |
-          set -o pipefail
-          gradle --no-daemon --stacktrace --console=plain :app:assembleDebug 2>&1 | tee build-apk.log
-      - name: Verify APK
+        run: gradle --no-daemon --stacktrace --console=plain :app:assembleDebug
+      - name: Verify APK contains real 3D assets
         run: |
           test -s app/build/outputs/apk/debug/app-debug.apk
+          test -s app/src/main/assets/cars/player.glb
+          test -s app/src/main/assets/environment/grandstand.glb
+          unzip -l app/build/outputs/apk/debug/app-debug.apk | grep -E 'assets/(cars|environment)/.*\.glb'
           sha256sum app/build/outputs/apk/debug/app-debug.apk
           ls -lh app/build/outputs/apk/debug/app-debug.apk
       - name: Upload playable APK
-        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: apex-engine-next-debug-apk
