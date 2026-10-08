@@ -72,7 +72,7 @@ static void perspective(float*m,float fovy,float aspect,float zn,float zf){
 }
 static void lookAt(float*m,float ex,float ey,float ez,float cx,float cy,float cz){
     float fx=cx-ex,fy=cy-ey,fz=cz-ez,fl=std::sqrt(fx*fx+fy*fy+fz*fz);if(fl<.0001f)fl=1;
-    fx/=fl;fy/=fl;fz/=fl;float sx=fz,sy=0,sz=-fx,sl=std::sqrt(sx*sx+sy*sy+sz*sz);
+    fx/=fl;fy/=fl;fz/=fl;float sx=-fz,sy=0,sz=fx,sl=std::sqrt(sx*sx+sy*sy+sz*sz);
     if(sl<.0001f){sx=1;sy=0;sz=0;}else{sx/=sl;sy/=sl;sz/=sl;}
     float tx=sy*fz-sz*fy,ty=sz*fx-sx*fz,tz=sx*fy-sy*fx;
     m[0]=sx;m[4]=sy;m[8]=sz;m[12]=-(sx*ex+sy*ey+sz*ez);m[1]=tx;m[5]=ty;m[9]=tz;m[13]=-(tx*ex+ty*ey+tz*ez);
@@ -463,6 +463,8 @@ extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeS
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeOffTrackDistance(JNIEnv*,jclass){return race.offTrackDistance;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeProgress(JNIEnv*,jclass){return race.playerProgress;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeFps(JNIEnv*,jclass){return renderFps;}
+extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativeGear(JNIEnv*,jclass){return car.gear;}
+extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeRpm(JNIEnv*,jclass){return car.rpm;}
 extern "C" JNIEXPORT jfloat JNICALL Java_com_apexenginenext_MainActivity_nativeLateralG(JNIEnv*,jclass){return car.lateralAccel/9.81f;}
 extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativeLap(JNIEnv*,jclass){return race.lap;}
 extern "C" JNIEXPORT jint JNICALL Java_com_apexenginenext_MainActivity_nativePosition(JNIEnv*,jclass){return race.position;}
