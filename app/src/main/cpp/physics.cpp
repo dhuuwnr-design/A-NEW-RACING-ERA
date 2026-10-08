@@ -25,9 +25,12 @@ void step(Car& c,const Input& in,float dt){
     const float alphaR=std::atan2(c.vy-lr*c.yawRate,vxf);
     const float frontGrip=mu*(c.wheel[0].load+c.wheel[1].load),rearGrip=mu*(c.wheel[2].load+c.wheel[3].load);
     float fyF=clamp(-Cf*alphaF,-frontGrip,frontGrip),fyR=clamp(-Cr*alphaR,-rearGrip,rearGrip);
-    const float driveForce=c.powertrain.step({throttle,brake},vxf,dt);
+    const float rawDriveForce=c.powertrain.step({throttle,brake},vxf,dt);
     c.rpm=c.powertrain.state().rpm;c.gear=c.powertrain.state().gear;c.engineTorque=c.powertrain.state().engineTorqueNm;
     c.drsActive=in.drs&&vxf>20.0f;
+    const float slipSpeed=std::fabs(c.vy);
+    const float tractionFactor=clamp(1.0f-slipSpeed/std::max(12.0f,vxf*0.42f),0.55f,1.0f);
+    const float driveForce=rawDriveForce*tractionFactor;
     float fxRear=driveForce-(c.drsActive?0.00055f*vxf*vxf:0.0f)-brake*maxBrake;
     const float rearLatRatio=std::fabs(fyR)/std::max(1.0f,rearGrip);
     const float rearLongCap=rearGrip*std::sqrt(std::max(0.0f,1.0f-rearLatRatio*rearLatRatio));
@@ -42,9 +45,12 @@ void step(Car& c,const Input& in,float dt){
     c.longitudinalAccel=fxBody/std::max(1.0f,c.mass);
     c.lateralAccel=fyBody/std::max(1.0f,c.mass);
     const float yawMoment=lf*fyF*std::cos(c.steeringAngle)-lr*fyR;
-    c.yawRate+=(yawMoment/Iz)*dt;c.yawRate*=std::pow(0.985f,dt*60.0f);c.yaw+=c.yawRate*dt;
+    c.yawRate+=(yawMoment/Iz)*dt;
+    const float lateralStability=2.8f+std::min(2.2f,vxf*0.06f);
+    c.vy+=(c.lateralAccel-lateralStability*c.vy)*dt;
+    c.yawRate*=std::pow(0.965f,dt*60.0f);c.yaw+=c.yawRate*dt;
     const float sy=std::sin(c.yaw),cy=std::cos(c.yaw);
-    c.vx=std::max(0.0f,c.vx+c.longitudinalAccel*dt);c.vy+=c.lateralAccel*dt;
+    c.vx=std::max(0.0f,c.vx+c.longitudinalAccel*dt);
     c.x+=(sy*c.vy+cy*c.vx)*dt;c.y+=(cy*c.vx-sy*c.vy)*dt;c.speed=std::sqrt(c.vx*c.vx+c.vy*c.vy);
     const float targetPitch=clamp(-c.longitudinalAccel*0.035f,-0.12f,0.12f),targetRoll=clamp(c.lateralAccel*0.018f,-0.14f,0.14f);
     c.pitch+=(targetPitch-c.pitch)*std::min(1.0f,dt*7.0f);c.roll+=(targetRoll-c.roll)*std::min(1.0f,dt*7.0f);
